@@ -1,4 +1,4 @@
-# Carta · Artesanal Colombia — Hamburguesas Alfredo
+# Carta · Artesanal Colombia
 
 Carta digital mobile-first. Sin dependencias, sin build, sin servidor.
 
