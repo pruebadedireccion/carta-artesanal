@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B0A09">
+<title>Diagnóstico · Carta Artesanal Colombia</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#0B0A09;color:#F7F1E6;
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto}
+  h1{font-size:20px;letter-spacing:.02em;margin-bottom:4px}
+  .sub{color:#9C9286;font-size:13px;margin-bottom:20px}
+  .verdict{
+    border-radius:14px;padding:18px;margin-bottom:18px;
+    border:1px solid rgba(247,241,230,.15);
+  }
+  .verdict.ok{background:rgba(64,180,110,.12);border-color:rgba(64,180,110,.5)}
+  .verdict.bad{background:rgba(229,72,77,.12);border-color:rgba(229,72,77,.55)}
+  .verdict b{display:block;font-size:17px;margin-bottom:6px}
+  .verdict p{font-size:13.5px;color:#D9D0C3}
+  .box{
+    border:1px solid rgba(247,241,230,.13);border-radius:12px;
+    padding:14px 16px;margin-bottom:10px;background:rgba(255,255,255,.02);
+  }
+  .row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;
+    border-bottom:1px solid rgba(247,241,230,.07);font-size:13.5px}
+  .row:last-child{border-bottom:0}
+  .row span:first-child{color:#9C9286}
+  .row span:last-child{text-align:right;font-weight:600}
+  .ok-t{color:#5FCF8C}
+  .bad-t{color:#FF6B70}
+  .warn-t{color:#F5A524}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.16em;color:#F5A524;
+    margin:22px 0 10px}
+  /* prueba animada */
+  .stage{
+    height:120px;border-radius:12px;border:1px solid rgba(247,241,230,.13);
+    background:rgba(255,255,255,.02);position:relative;overflow:hidden;
+    margin-bottom:8px;
+  }
+  .mover{
+    position:absolute;top:50%;left:8px;width:56px;height:56px;border-radius:12px;
+    background:linear-gradient(150deg,#F5A524,#C97A10);margin-top:-28px;
+    animation:slide 2.4s cubic-bezier(.4,0,.6,1) infinite alternate;
+  }
+  @keyframes slide{from{transform:translateX(0) rotate(0)}to{transform:translateX(calc(100vw - 120px)) rotate(180deg)}}
+  .spin{
+    position:absolute;right:14px;top:14px;width:22px;height:22px;border-radius:50%;
+    border:2px solid rgba(245,165,36,.25);border-top-color:#F5A524;
+    animation:rot 1s linear infinite;
+  }
+  @keyframes rot{to{rotate:360deg}}
+  .hint{font-size:12.5px;color:#9C9286;margin-top:8px}
+  code{background:rgba(255,255,255,.07);padding:1px 6px;border-radius:5px;font-size:12.5px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .btn{display:inline-block;padding:11px 18px;border-radius:999px;
+    background:#F5A524;color:#170F02;font-weight:800;font-size:13px;
+    text-decoration:none;letter-spacing:.06em;text-transform:uppercase}
+  .btn.ghost{background:transparent;color:#F7F1E6;border:1px solid rgba(247,241,230,.25)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Diagnóstico de movimiento</h1>
+  <p class="sub">Esta página dice exactamente qué está bloqueando las animaciones.</p>
+
+  <div class="verdict" id="verdict">
+    <b>Analizando…</b>
+    <p>Un momento.</p>
+  </div>
+
+  <h2>Prueba visual</h2>
+  <div class="stage">
+    <div class="mover" id="mover"></div>
+    <div class="spin"></div>
+  </div>
+  <p class="hint">Si el cuadrado <b>no se mueve</b> ni el aro gira, tu navegador está bloqueando las animaciones — no es la carta.</p>
+
+  <h2>Lo que detecta tu navegador</h2>
+  <div class="box" id="checks"></div>
+  <div class="box"><div class="row" id="verRow"><span>Versión publicada</span><span class="warn-t">consultando…</span></div></div>
+
+  <h2>Qué hacer</h2>
+  <div class="box" id="advice"></div>
+
+  <div class="actions">
+    <a class="btn" href="./" id="goCarta">Ir a la carta</a>
+    <a class="btn ghost" href="./?v=4" id="goFresh">Abrir sin caché</a>
+  </div>
+  <p class="hint" style="margin-top:16px">
+    Enviar una captura de esta pantalla es suficiente para saber qué pasa.
+  </p>
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
+  var saveData = !!conn.saveData;
+  var ua = navigator.userAgent;
+  var inApp = /WhatsApp|FBAN|FBAV|Instagram|Line\/|Twitter/i.test(ua);
+  var canVideo = !!document.createElement("video").canPlayType;
+  var mp4 = canVideo ? document.createElement("video").canPlayType('video/mp4; codecs="avc1.42E01E"') : "";
+
+  // animación real medida
+  var m = document.getElementById("mover");
+  var anims = (m.getAnimations ? m.getAnimations() : []);
+  var running = false;
+  if (anims.length) {
+    var a = anims[0];
+    running = a.playState === "running";
+  }
+
+  // ¿el servidor tiene la versión nueva?
+  var versionServidor = "sin datos";
+  fetch("./", { cache: "no-store" })
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var mm = html.match(/data-version="([^"]+)"/);
+      versionServidor = mm ? mm[1] : "no encontrada";
+      var el = document.getElementById("verRow");
+      if (el) {
+        var ok = versionServidor === "v4";
+        el.innerHTML = '<span>Versión publicada</span><span class="' + (ok ? "ok-t" : "bad-t") + '">' +
+          versionServidor + (ok ? "" : " (vieja: borra la caché)") + "</span>";
+      }
+    })
+    .catch(function () {});
+
+  // fps
+  var frames = 0, t0 = performance.now();
+  function tick(now) {
+    frames++;
+    if (now - t0 < 1000) requestAnimationFrame(tick);
+    else finish(frames);
+  }
+  requestAnimationFrame(tick);
+
+  function row(label, value, cls) {
+    return '<div class="row"><span>' + label + '</span><span class="' + (cls || '') + '">' + value + '</span></div>';
+  }
+
+  function finish(fps) {
+    var bloqueado = reduce || fps < 10;
+
+    var checks = "";
+    checks += row("Reducir movimiento (sistema)", reduce ? "ACTIVADO" : "desactivado", reduce ? "bad-t" : "ok-t");
+    checks += row("Ahorro de datos", saveData ? "ACTIVADO" : "desactivado", saveData ? "warn-t" : "ok-t");
+    checks += row("Animaciones corriendo", running ? "sí" : "NO", running ? "ok-t" : "bad-t");
+    checks += row("Fotogramas por segundo", fps + " fps", fps >= 30 ? "ok-t" : fps >= 15 ? "warn-t" : "bad-t");
+    checks += row("Navegador dentro de una app", inApp ? "sí (WhatsApp/Instagram)" : "no", inApp ? "warn-t" : "ok-t");
+    checks += row("Video H.264 soportado", mp4 ? "sí" : "no", mp4 ? "ok-t" : "bad-t");
+    checks += row("Conexión", conn.effectiveType ? conn.effectiveType.toUpperCase() : "—", "");
+    checks += row("Pantalla", (window.screen.width * (window.devicePixelRatio || 1)) + " × " +
+                  (window.screen.height * (window.devicePixelRatio || 1)) + " px", "");
+    checks += row("Navegador", navigator.userAgent.length > 70
+                  ? navigator.userAgent.slice(0, 70) + "…" : navigator.userAgent, "");
+    document.getElementById("checks").innerHTML = checks;
+
+    var v = document.getElementById("verdict");
+    var adv = document.getElementById("advice");
+    var titulo, texto, consejo;
+
+    if (reduce) {
+      titulo = "Tu teléfono tiene 'Reducir movimiento' activado";
+      texto = "La carta lo respeta a propósito: sin esa preferencia, todas las animaciones funcionarían. No es un error de la web.";
+      consejo =
+        "<b>iPhone:</b> Ajustes → Accesibilidad → Movimiento → desactiva <i>Reducir movimiento</i>.<br><br>" +
+        "<b>Android:</b> Ajustes → Accesibilidad → <i>Quitar animaciones</i> (o Opciones de desarrollador → Escala de animación → 1x).<br><br>" +
+        "Después recarga esta página: el cuadrado debe moverse.";
+    } else if (fps < 10) {
+      titulo = "El navegador no está dibujando animaciones";
+      texto = "Solo se registraron " + fps + " fotogramas por segundo. Puede ser el modo de ahorro de energía o un navegador antiguo.";
+      consejo = "Prueba en Chrome o Safari actualizados, y desactiva el ahorro de batería.";
+    } else if (inApp) {
+      titulo = "Estás dentro del navegador de una app";
+      texto = "El navegador interno de WhatsApp o Instagram funciona bien, pero limita algunas cosas (autoplay, fluidez).";
+      consejo = "Abre el link en Chrome o Safari para ver la carta completa.";
+    } else {
+      titulo = "Todo correcto: deberías ver movimiento";
+      texto = "El navegador dibuja a " + fps + " fps y no hay preferencias que bloqueen nada. Si aun así no ves la carta animada, es caché.";
+      consejo = "Cierra la pestaña de la carta y ábrela de nuevo con el botón <b>Abrir sin caché</b>, o en una ventana de incógnito.";
+    }
+
+    if (bloqueado) { v.className = "verdict bad"; }
+    else { v.className = "verdict ok"; }
+    v.innerHTML = "<b>" + titulo + "</b><p>" + texto + "</p>";
+    adv.innerHTML = consejo;
+  }
+})();
+</script>
+</body>
+</html>
