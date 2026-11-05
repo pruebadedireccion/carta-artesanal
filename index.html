@@ -279,7 +279,7 @@ p{text-wrap:pretty}
 }
 .ticker__track{
   display:flex;width:max-content;
-  animation:slide 34s linear infinite;
+  animation:slide 26s linear infinite;
 }
 .ticker__track span{
   font-family:var(--display);font-size:13px;letter-spacing:.2em;
@@ -717,6 +717,116 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.2)}100%{transform:scale(1)}}
 .cartbar__info b.is-pop{animation:pop .36s var(--ease)}
 
+/* ============================================================
+   v4 · ambiente vivo
+   Constantes: baja estos valores si se siente exagerado.
+   ============================================================ */
+:root{
+  --amb-op:.26;      /* opacidad de la malla de luz */
+  --ghost-op:.2;     /* trazo de los números fantasma */
+}
+
+/* ---------- malla de luz ---------- */
+.amb{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;opacity:var(--amb-op)}
+.amb__b{
+  position:absolute;border-radius:50%;will-change:transform;
+  background:radial-gradient(circle,rgba(245,165,36,.62),rgba(245,165,36,.14) 44%,transparent 70%);
+}
+.amb__b--1{width:78vw;height:78vw;left:-18vw;top:-16vh;animation:drift1 84s ease-in-out infinite alternate}
+.amb__b--2{width:64vw;height:64vw;right:-16vw;top:34vh;
+  background:radial-gradient(circle,rgba(201,122,16,.5),rgba(201,122,16,.1) 46%,transparent 72%);
+  animation:drift2 96s ease-in-out infinite alternate}
+.amb__b--3{width:70vw;height:70vw;left:22vw;bottom:-24vh;
+  background:radial-gradient(circle,rgba(245,165,36,.36),transparent 68%);
+  animation:drift3 108s ease-in-out infinite alternate}
+@keyframes drift1{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(12vw,8vh,0) scale(1.12)}}
+@keyframes drift2{from{transform:translate3d(0,0,0) scale(1.05)}to{transform:translate3d(-10vw,-9vh,0) scale(.95)}}
+@keyframes drift3{from{transform:translate3d(0,0,0) scale(.98)}to{transform:translate3d(-14vw,-6vh,0) scale(1.1)}}
+
+/* ---------- brasas ---------- */
+.embers{position:fixed;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+.embers i{
+  position:absolute;bottom:-12px;border-radius:50%;background:var(--amber);
+  opacity:0;box-shadow:0 0 7px rgba(245,165,36,.85);
+  animation-name:rise;animation-timing-function:linear;animation-iteration-count:infinite;
+  will-change:transform,opacity;
+}
+@keyframes rise{
+  0%{transform:translate3d(0,0,0) scale(.5);opacity:0}
+  12%{opacity:var(--o,.3)}
+  72%{opacity:var(--o,.3)}
+  100%{transform:translate3d(var(--dx,24px),-108vh,0) scale(1);opacity:0}
+}
+
+/* ---------- grano animado ---------- */
+.grain{opacity:.07;animation:grainShift .72s steps(4) infinite}
+@keyframes grainShift{
+  0%{background-position:0 0}
+  25%{background-position:-38px 22px}
+  50%{background-position:28px -32px}
+  75%{background-position:-18px -14px}
+  100%{background-position:0 0}
+}
+
+/* ---------- pausa global ---------- */
+body.is-paused .amb__b,
+body.is-paused .embers i,
+body.is-paused .grain,
+body.is-paused .sec__thumb img,
+body.is-paused .band img,
+body.is-paused .hero__img img.is-ken{animation-play-state:paused}
+
+/* ---------- ken burns (fallback y miniaturas) ---------- */
+@keyframes kb{from{scale:1}to{scale:1.09}}
+.sec__thumb img{animation:kb 20s ease-in-out infinite alternate}
+.hero__img img.is-ken{animation:kb 15s ease-in-out infinite alternate}
+.band img{animation:kb 26s ease-in-out infinite alternate}
+
+/* ---------- palabras del hero ---------- */
+.word{
+  display:inline-block;opacity:0;transform:translateY(.42em) rotate(1.4deg);
+  animation:wordIn .95s var(--ease) forwards;
+  animation-delay:calc(var(--i,0) * 75ms + 120ms);
+}
+@keyframes wordIn{to{opacity:1;transform:none}}
+
+/* ---------- filas: línea que se dibuja ---------- */
+.row__btn{position:relative}
+.row__btn::after{
+  content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;
+  background:linear-gradient(90deg,var(--amber),rgba(245,165,36,0));
+  transition:width .45s var(--ease);
+}
+.row__btn:hover::after,.row__btn:focus-visible::after{width:100%}
+.row__name{transition:transform .3s var(--ease)}
+.row__btn:hover .row__name{transform:translateX(4px)}
+
+/* ---------- pulso del botón principal ---------- */
+.btn--primary{position:relative}
+.btn--primary::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  animation:ring 5s var(--ease) infinite;
+}
+@keyframes ring{
+  0%,66%{box-shadow:0 0 0 0 rgba(245,165,36,0)}
+  72%{box-shadow:0 0 0 0 rgba(245,165,36,.5)}
+  92%,100%{box-shadow:0 0 0 16px rgba(245,165,36,0)}
+}
+
+/* ---------- progreso con brillo ---------- */
+.topbar__progress i{box-shadow:0 0 12px rgba(245,165,36,.85)}
+
+/* ---------- números fantasma más presentes ---------- */
+.sec__ghost{-webkit-text-stroke:1px rgba(247,241,230,var(--ghost-op))}
+
+@media (prefers-reduced-motion:reduce){
+  .amb,.embers{display:none}
+  .grain{animation:none}
+  .sec__thumb img,.band img,.hero__img img.is-ken{animation:none}
+  .word{opacity:1;transform:none;animation:none}
+  .btn--primary::before{display:none}
+}
+
 /* ============================ responsive ============================ */
 @media (min-width:620px){
   .stats{grid-template-columns:repeat(4,1fr)}
@@ -820,6 +930,12 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 <body>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
+<div class="amb" aria-hidden="true">
+  <span class="amb__b amb__b--1"></span>
+  <span class="amb__b amb__b--2"></span>
+  <span class="amb__b amb__b--3"></span>
+</div>
+<div class="embers" id="embers" aria-hidden="true"></div>
 
 <header class="topbar">
   <div class="wrap topbar__in">
@@ -1751,7 +1867,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     g.className = "sec__ghost";
     g.setAttribute("aria-hidden", "true");
     g.textContent = idx.textContent;
-    g.dataset.parallax = "0.05";
+    g.dataset.parallax = "0.14";
     sec.insertBefore(g, sec.firstChild);
   });
 
@@ -1879,30 +1995,110 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     });
   }
 
-  /* ---------- video del hero (diferido: no compite con la primera pintura) ---------- */
+  /* ---------- brasas ---------- */
+  var embersEl = $("#embers");
+  if (embersEl && motionOK) {
+    for (var ei = 0; ei < 18; ei++) {
+      var em = document.createElement("i");
+      var sz = (2 + Math.random() * 2.4).toFixed(1);
+      em.style.left = (Math.random() * 100).toFixed(2) + "%";
+      em.style.width = sz + "px";
+      em.style.height = sz + "px";
+      em.style.setProperty("--dx", (Math.random() * 90 - 45).toFixed(0) + "px");
+      em.style.setProperty("--o", (0.12 + Math.random() * 0.3).toFixed(2));
+      em.style.animationDuration = (14 + Math.random() * 13).toFixed(1) + "s";
+      em.style.animationDelay = (-Math.random() * 26).toFixed(1) + "s";
+      embersEl.appendChild(em);
+    }
+  }
+
+  /* ---------- hero: entrada por palabras ---------- */
+  var heroH1 = document.querySelector(".hero h1");
+  if (heroH1 && motionOK) {
+    var wi = 0;
+    (function wrapWords(node) {
+      Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+        if (child.nodeType === 3) {
+          var words = child.textContent.trim().split(/\s+/).filter(Boolean);
+          if (!words.length) return;
+          var frag = document.createDocumentFragment();
+          words.forEach(function (w) {
+            var s = document.createElement("span");
+            s.className = "word";
+            s.style.setProperty("--i", wi++);
+            s.textContent = w;
+            frag.appendChild(s);
+            frag.appendChild(document.createTextNode(" "));
+          });
+          node.replaceChild(frag, child);
+        } else if (child.nodeType === 1) {
+          wrapWords(child);
+        }
+      });
+    })(heroH1);
+  }
+
+  /* ---------- video del hero ---------- */
   var heroVideo = $("#heroVideo");
-  function startHeroVideo() {
-    if (!heroVideo || !motionOK || saveData) return;
-    heroVideo.addEventListener("playing", function () {
-      heroVideo.classList.add("is-on");
-    }, { once: true });
+  var heroImg = document.querySelector(".hero__img img");
+  var intentos = 0;
+
+  function fallbackKen() {
+    if (heroImg) heroImg.classList.add("is-ken");
+  }
+
+  function playHero() {
+    if (!heroVideo || !motionOK || saveData || document.hidden) return;
+    heroVideo.muted = true;
+    heroVideo.defaultMuted = true;
+    heroVideo.setAttribute("playsinline", "");
+    heroVideo.setAttribute("webkit-playsinline", "");
     var pr = heroVideo.play();
-    if (pr && pr.catch) pr.catch(function () {});
+    if (pr && pr.then) {
+      pr.then(function () { heroVideo.classList.add("is-on"); })
+        .catch(function () {
+          intentos += 1;
+          if (intentos >= 2) fallbackKen();
+        });
+    }
+  }
+
+  function startHeroVideo() {
+    if (!heroVideo) return;
+    if (!motionOK || saveData) { fallbackKen(); return; }
+    playHero();
 
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(function (es) {
         es.forEach(function (e) {
-          if (e.isIntersecting) { var q = heroVideo.play(); if (q && q.catch) q.catch(function () {}); }
+          if (e.isIntersecting) playHero();
           else heroVideo.pause();
         });
       }, { threshold: 0.08 }).observe(heroVideo);
     }
+
+    /* reintento en el primer gesto (navegadores que bloquean autoplay) */
+    ["touchstart", "pointerdown", "click"].forEach(function (ev) {
+      document.addEventListener(ev, function once() {
+        document.removeEventListener(ev, once);
+        playHero();
+      }, { passive: true, once: true });
+    });
   }
+
   if ("requestIdleCallback" in window) {
     requestIdleCallback(startHeroVideo, { timeout: 1800 });
   } else {
     setTimeout(startHeroVideo, 1200);
   }
+
+  /* ---------- pausa global al ocultar la pestaña ---------- */
+  document.addEventListener("visibilitychange", function () {
+    document.body.classList.toggle("is-paused", document.hidden);
+    if (!heroVideo) return;
+    if (document.hidden) heroVideo.pause();
+    else if (heroVideo.classList.contains("is-on")) playHero();
+  });
 
   $("#year").textContent = new Date().getFullYear();
   render();
