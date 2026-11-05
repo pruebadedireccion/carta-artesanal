@@ -251,6 +251,11 @@ p{text-wrap:pretty}
   background:radial-gradient(circle at 50% 40%,#2A2119,#141110 58%,#0B0A09 82%);
 }
 .hero__img img{width:100%;height:100%;object-fit:cover}
+.hero__video{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity .8s var(--ease);pointer-events:none;
+}
+.hero__video.is-on{opacity:1}
 .seal{
   position:absolute;right:-2px;bottom:2px;width:104px;height:104px;
   display:grid;place-items:center;border-radius:50%;
@@ -567,6 +572,151 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
 
+/* ============================================================
+   v3 · profundidad, escala y movimiento
+   ============================================================ */
+
+/* ---------- grano y viñeta ---------- */
+.grain{
+  position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+  background-size:160px 160px;
+}
+.vignette{
+  position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(125% 100% at 50% 38%,transparent 52%,rgba(0,0,0,.42) 100%);
+}
+@media (prefers-reduced-motion:reduce){.grain,.vignette{display:none}}
+
+/* ---------- luz que respira ---------- */
+.hero::before{animation:breathe 22s ease-in-out infinite alternate}
+@keyframes breathe{
+  from{opacity:.7;transform:scale(1)}
+  to{opacity:1;transform:scale(1.1)}
+}
+@media (prefers-reduced-motion:reduce){.hero::before{animation:none}}
+
+/* ---------- sombra de contacto del hero ---------- */
+.hero__art::after{
+  content:"";position:absolute;left:50%;bottom:-14px;z-index:0;
+  width:58%;height:34px;transform:translateX(-50%);
+  border-radius:50%;filter:blur(20px);background:rgba(0,0,0,.8);
+}
+.hero__img{position:relative;z-index:1}
+
+/* ---------- números fantasma ---------- */
+.sec{position:relative;overflow:hidden}
+.sec__ghost{
+  position:absolute;right:-.03em;top:-.05em;z-index:0;
+  font-family:var(--display);font-size:clamp(150px,23vw,270px);line-height:.78;
+  letter-spacing:-.02em;color:transparent;
+  -webkit-text-stroke:1px rgba(247,241,230,.11);
+  pointer-events:none;user-select:none;will-change:transform;
+}
+.sec > .wrap{position:relative;z-index:1}
+@media print{.sec__ghost{display:none}}
+
+/* ---------- títulos con máscara ---------- */
+.mask{display:block;overflow:hidden;padding-top:.16em;margin-top:-.16em}
+.mask-line{
+  display:block;transform:translateY(112%);
+  transition:transform .9s var(--ease);
+  will-change:transform;
+}
+.reveal.in .mask-line,.mask.is-in .mask-line{transform:none}
+@media (prefers-reduced-motion:reduce){.mask-line{transform:none;transition:none}}
+@media print{.mask-line{transform:none !important}}
+
+/* ---------- banda a sangre ---------- */
+.band{
+  position:relative;margin-top:clamp(52px,7vw,88px);
+  height:clamp(300px,46vw,440px);
+  overflow:hidden;
+}
+.band__inner{
+  position:absolute;inset:0;display:grid;place-items:center;isolation:isolate;
+  clip-path:inset(0 0 100% 0);
+  transition:clip-path 1.05s var(--ease);
+}
+.band.in .band__inner{clip-path:inset(0)}
+.band img{
+  position:absolute;inset:-16% 0;z-index:0;width:100%;height:132%;
+  object-fit:cover;filter:saturate(.86) contrast(1.08) brightness(.72);
+  will-change:transform;
+}
+.band__inner::after{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(62% 62% at 50% 50%,transparent,rgba(11,10,9,.6)),
+    linear-gradient(180deg,rgba(11,10,9,.9),rgba(11,10,9,.34) 42%,rgba(11,10,9,.95));
+}
+.band__txt{position:relative;z-index:2;text-align:center;max-width:760px;padding:0 var(--pad)}
+.band__txt h2{
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:clamp(30px,5.6vw,56px);line-height:.96;margin-top:12px;
+}
+.band__txt p{
+  margin-top:14px;color:var(--cream-2);
+  font-size:clamp(13px,1.5vw,15px);line-height:1.6;
+}
+@media (prefers-reduced-motion:reduce){.band{clip-path:none;transition:none}}
+@media print{.band{clip-path:none;height:60mm}}
+
+/* ---------- foto que sigue al cursor ---------- */
+.peek{
+  position:fixed;top:0;left:0;width:176px;height:176px;z-index:65;
+  border-radius:14px;overflow:hidden;pointer-events:none;
+  border:1px solid rgba(245,165,36,.28);
+  box-shadow:0 26px 60px rgba(0,0,0,.7);
+  opacity:0;transition:opacity .22s var(--ease);
+}
+.peek img{width:100%;height:100%;object-fit:cover}
+.peek.is-on{opacity:1}
+@media (hover:none),(max-width:899px){.peek{display:none}}
+@media (prefers-reduced-motion:reduce){.peek{display:none}}
+
+/* ---------- luz que sigue al cursor en botones ---------- */
+.btn--primary{
+  background-image:radial-gradient(150px 150px at var(--mx,50%) var(--my,50%),
+    rgba(255,255,255,.38),transparent 72%);
+}
+.btn--primary:hover{background-color:#FFB63A}
+
+/* ---------- filas que entran escalonadas ---------- */
+.menu .row{
+  opacity:0;transform:translateX(20px);
+  transition:opacity .55s var(--ease),transform .55s var(--ease);
+}
+.menu .row.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .menu .row{opacity:1;transform:none;transition:none}
+}
+@media print{.menu .row{opacity:1 !important;transform:none !important}}
+
+/* ---------- sección de proceso ---------- */
+.process{padding:clamp(52px,7vw,88px) 0 0}
+.process__grid{display:grid;gap:14px;margin-top:28px}
+.proc{
+  position:relative;padding:24px 22px 22px;border-radius:14px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.032),rgba(255,255,255,.006));
+}
+.proc__n{
+  position:absolute;right:18px;top:16px;
+  font-family:var(--display);font-size:12px;letter-spacing:.12em;color:var(--muted-2);
+}
+.proc__ico{width:36px;height:36px;color:var(--amber);margin-bottom:16px;display:block}
+.proc h3{
+  font-family:var(--display);font-weight:400;font-size:21px;
+  text-transform:uppercase;letter-spacing:.02em;line-height:1.05;
+}
+.proc p{font-size:12.5px;color:var(--muted);line-height:1.6;margin-top:7px}
+@media (min-width:700px){.process__grid{grid-template-columns:repeat(3,1fr)}}
+
+/* ---------- rebote del contador ---------- */
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.2)}100%{transform:scale(1)}}
+.cartbar__info b.is-pop{animation:pop .36s var(--ease)}
+
 /* ============================ responsive ============================ */
 @media (min-width:620px){
   .stats{grid-template-columns:repeat(4,1fr)}
@@ -597,6 +747,9 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   html,body{background:#0B0A09 !important;color:#F7F1E6;width:auto}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .topbar,.nav,.cartbar,.sheet,.overlay,.toast,.btn--ghost,.icon-btn,.seal{display:none !important}
+  .grain,.vignette,.peek,.hero__video,.sec__ghost{display:none !important}
+  .band__inner{clip-path:none !important}
+  .band{height:60mm;margin-top:6mm}
   .wrap{max-width:none;padding:0 13mm}
 
   main{padding:0}
@@ -665,6 +818,8 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 </style>
 </head>
 <body>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
 
 <header class="topbar">
   <div class="wrap topbar__in">
@@ -732,6 +887,11 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
             <source type="image/webp" srcset="assets/img/burger-casa.webp">
             <img src="assets/img/burger-casa.jpg" alt="Hamburguesa De la Casa: pan brioche, carne artesanal de 125 g, cheddar fundido y tocineta" width="720" height="500" fetchpriority="high">
           </picture>
+          <video class="hero__video" id="heroVideo" muted loop playsinline preload="none"
+                 poster="assets/img/burger-casa.avif" aria-hidden="true" tabindex="-1">
+            <source src="assets/video/hero-loop.webm" type="video/webm">
+            <source src="assets/video/hero-loop.mp4" type="video/mp4">
+          </video>
         </div>
         <div class="seal" aria-hidden="true">
           <svg class="seal__ring" viewBox="0 0 120 120">
@@ -854,6 +1014,22 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     </div>
   </section>
 
+  <!-- ======================= BANDA ======================= -->
+  <section class="band" id="banda">
+    <div class="band__inner">
+      <picture>
+        <source type="image/avif" srcset="assets/img/salchipapa.avif">
+        <source type="image/webp" srcset="assets/img/salchipapa.webp">
+        <img src="assets/img/salchipapa.jpg" alt="Salchipapa recién hecha con salchicha, tocineta y queso fundido" loading="lazy" width="775" height="535" data-parallax="0.12">
+      </picture>
+      <div class="band__txt">
+        <div class="kicker">En cada pedido</div>
+        <h2>Papas a la francesa,<br>sin excepción</h2>
+        <p>Recién hechas y crujientes, al lado de todo lo que sale de la parrilla.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- ======================= NUESTRA CASA ======================= -->
   <section class="house" id="casa">
     <div class="wrap">
@@ -876,6 +1052,41 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
           <div class="stat"><b>Brioche</b><span>Pan de la casa</span></div>
           <div class="stat"><b>Papas</b><span>En cada pedido</span></div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= PROCESO ======================= -->
+  <section class="process" id="proceso">
+    <div class="wrap">
+      <div class="sec__index reveal"><b>09</b><i></i>De la parrilla a tu mesa</div>
+      <h2 class="display mask" style="font-size:clamp(30px,5.4vw,46px)">Cómo se hace</h2>
+      <div class="process__grid">
+        <article class="proc reveal">
+          <span class="proc__n">01</span>
+          <svg class="proc__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.2"/>
+          </svg>
+          <h3>Carne artesanal</h3>
+          <p>125 g de carne porcionada a mano, sazonada y lista para la parrilla.</p>
+        </article>
+        <article class="proc reveal">
+          <span class="proc__n">02</span>
+          <svg class="proc__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 8h17"/><path d="M6 8v9.5M12 8v9.5M18 8v9.5"/><path d="M4.5 17.5h15"/>
+          </svg>
+          <h3>A la parrilla</h3>
+          <p>Se sella al fuego y se arma sobre pan brioche con la salsa de la casa.</p>
+        </article>
+        <article class="proc reveal">
+          <span class="proc__n">03</span>
+          <svg class="proc__ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5.5 8h13l-1.2 10.5a1.6 1.6 0 0 1-1.6 1.4H8.3a1.6 1.6 0 0 1-1.6-1.4L5.5 8Z"/>
+            <path d="M9 8V6.2A3 3 0 0 1 15 6.2V8"/>
+          </svg>
+          <h3>Y sale con papas</h3>
+          <p>Cada pedido se empaca con papas a la francesa recién hechas.</p>
+        </article>
       </div>
     </div>
   </section>
@@ -1012,6 +1223,8 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     <p class="fineprint">Se abre WhatsApp con tu pedido escrito. Nosotros confirmamos disponibilidad y tiempo de entrega.</p>
   </div>
 </section>
+
+<div class="peek" id="peek" aria-hidden="true"><img src="assets/img/burger-casa.jpg" alt=""></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1215,6 +1428,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
      ========================================================= */
   var bar = $("#cartbar"), countEl = $("#cartCount"), totalEl = $("#cartTotal");
   var linesEl = $("#cartLines"), emptyEl = $("#cartEmpty"), sheetTotal = $("#sheetTotal");
+  var lastCount = -1;
 
   /* ---------- número que cuenta, no que salta ---------- */
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -1239,6 +1453,12 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     bar.classList.toggle("is-open", c > 0);
     bar.setAttribute("aria-hidden", c > 0 ? "false" : "true");
     countEl.textContent = c === 1 ? "1 producto" : c + " productos";
+    if (lastCount >= 0 && c !== lastCount) {
+      countEl.classList.remove("is-pop");
+      void countEl.offsetWidth;
+      countEl.classList.add("is-pop");
+    }
+    lastCount = c;
     tweenMoney(totalEl, t);
     tweenMoney(sheetTotal, t);
 
@@ -1486,12 +1706,13 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   window.addEventListener("scroll", function () {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(function () { setActive(); ticking = false; });
+    requestAnimationFrame(function () { setActive(); parallax(); ticking = false; });
   }, { passive: true });
 
   window.addEventListener("resize", function () {
     setActive();
     updateProgress();
+    parallax();
   });
 
   navIn.addEventListener("scroll", function () {
@@ -1513,6 +1734,168 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     $$(".reveal").forEach(function (el) { rev.observe(el); });
   } else {
     $$(".reveal").forEach(function (el) { el.classList.add("in"); });
+  }
+
+  /* =========================================================
+     v3 · profundidad, escala y detalles
+     ========================================================= */
+  var canHover = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+  var saveData = !!(navigator.connection && navigator.connection.saveData);
+  var motionOK = !reduceMotion.matches;
+
+  /* ---------- números fantasma ---------- */
+  $$(".sec").forEach(function (sec) {
+    var idx = sec.querySelector(".sec__index b");
+    if (!idx) return;
+    var g = document.createElement("span");
+    g.className = "sec__ghost";
+    g.setAttribute("aria-hidden", "true");
+    g.textContent = idx.textContent;
+    g.dataset.parallax = "0.05";
+    sec.insertBefore(g, sec.firstChild);
+  });
+
+  /* ---------- títulos enmascarados ---------- */
+  $$(".sec__head h2, .how h2, .process h2").forEach(function (h) {
+    if (h.querySelector(".mask-line")) return;
+    var s = document.createElement("span");
+    s.className = "mask-line";
+    s.textContent = h.textContent;
+    h.textContent = "";
+    h.appendChild(s);
+    h.classList.add("mask");
+  });
+
+  /* ---------- parallax ---------- */
+  var heroArt = $(".hero__art");
+  if (heroArt) heroArt.dataset.parallax = "0.09";
+  var paraEls = $$("[data-parallax]");
+
+  function parallax() {
+    if (!motionOK) return;
+    var vh = window.innerHeight;
+    for (var i = 0; i < paraEls.length; i++) {
+      var el = paraEls[i];
+      var r = el.getBoundingClientRect();
+      if (r.bottom < -260 || r.top > vh + 260) continue;
+      var k = parseFloat(el.dataset.parallax) || 0.06;
+      var d = r.top + r.height / 2 - vh / 2;
+      el.style.transform = "translate3d(0," + (-d * k).toFixed(2) + "px,0)";
+    }
+  }
+
+  /* ---------- banda que se abre ---------- */
+  var bandEl = $("#banda");
+  if (bandEl) {
+    if ("IntersectionObserver" in window) {
+      var bandObs = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting) { bandEl.classList.add("in"); bandObs.disconnect(); }
+        });
+      }, { threshold: 0.12 });
+      bandObs.observe(bandEl);
+    } else { bandEl.classList.add("in"); }
+  }
+
+  /* ---------- máscaras que suben ---------- */
+  if ("IntersectionObserver" in window) {
+    var maskObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("is-in"); maskObs.unobserve(en.target); }
+      });
+    }, { threshold: 0.15 });
+    $$(".mask").forEach(function (m) { maskObs.observe(m); });
+  } else {
+    $$(".mask").forEach(function (m) { m.classList.add("is-in"); });
+  }
+
+  /* ---------- filas escalonadas ---------- */
+  if ("IntersectionObserver" in window && motionOK) {
+    var rowObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("in"); rowObs.unobserve(en.target); }
+      });
+    }, { rootMargin: "0px 0px -4% 0px", threshold: 0.06 });
+    $$(".menu .row").forEach(function (r, i) {
+      r.style.transitionDelay = (i % 6) * 55 + "ms";
+      rowObs.observe(r);
+    });
+  } else {
+    $$(".menu .row").forEach(function (r) { r.classList.add("in"); });
+  }
+
+  /* ---------- foto que sigue al cursor ---------- */
+  var peekEl = $("#peek"), peekImg = peekEl ? peekEl.querySelector("img") : null;
+  var PEEK = {
+    hamburguesas: "burger-casa-zoom", alitas: "alitas-crispy", perros: "perros",
+    salchipapa: "salchipapa", kids: "kids-burger",
+    adicionales: "alitas-crispy", bebidas: "salchipapa"
+  };
+  var pkX = 0, pkY = 0, pkTX = 0, pkTY = 0, pkRaf = null, pkOn = false;
+
+  function peekLoop() {
+    pkX += (pkTX - pkX) * 0.17;
+    pkY += (pkTY - pkY) * 0.17;
+    if (peekEl) {
+      var lado = (pkX + 210 > window.innerWidth) ? -1 : 1;
+      peekEl.style.transform =
+        "translate3d(" + (pkX + lado * 104).toFixed(1) + "px," + (pkY - 12).toFixed(1) + "px,0) translate(-50%,-50%)";
+    }
+    if (pkOn || Math.abs(pkTX - pkX) > 0.8) pkRaf = requestAnimationFrame(peekLoop);
+    else pkRaf = null;
+  }
+
+  if (peekEl && peekImg && canHover && motionOK) {
+    document.addEventListener("mousemove", function (e) {
+      pkTX = e.clientX; pkTY = e.clientY;
+      if (!pkRaf) { pkX = pkTX; pkY = pkTY; pkRaf = requestAnimationFrame(peekLoop); }
+    }, { passive: true });
+
+    $$(".row__btn").forEach(function (btn) {
+      var sec = btn.closest(".sec");
+      var key = sec ? sec.id : "";
+      btn.addEventListener("mouseenter", function () {
+        var name = PEEK[key] || "burger-casa";
+        peekImg.src = "assets/img/" + name + ".webp";
+        pkOn = true;
+        peekEl.classList.add("is-on");
+        if (!pkRaf) pkRaf = requestAnimationFrame(peekLoop);
+      });
+      btn.addEventListener("mouseleave", function () {
+        pkOn = false;
+        peekEl.classList.remove("is-on");
+      });
+    });
+  }
+
+  /* ---------- luz que sigue al cursor ---------- */
+  if (canHover && motionOK) {
+    $$(".btn--primary").forEach(function (btn) {
+      btn.addEventListener("pointermove", function (e) {
+        var r = btn.getBoundingClientRect();
+        btn.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%");
+        btn.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%");
+      });
+    });
+  }
+
+  /* ---------- video del hero ---------- */
+  var heroVideo = $("#heroVideo");
+  if (heroVideo && motionOK && !saveData) {
+    heroVideo.addEventListener("playing", function () {
+      heroVideo.classList.add("is-on");
+    }, { once: true });
+    var pr = heroVideo.play();
+    if (pr && pr.catch) pr.catch(function () {});
+
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          if (e.isIntersecting) { var q = heroVideo.play(); if (q && q.catch) q.catch(function () {}); }
+          else heroVideo.pause();
+        });
+      }, { threshold: 0.08 }).observe(heroVideo);
+    }
   }
 
   $("#year").textContent = new Date().getFullYear();
