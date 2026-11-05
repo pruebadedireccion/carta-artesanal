@@ -41,7 +41,8 @@ html{-webkit-text-size-adjust:100%}
   --cream:#F7F1E6;
   --cream-2:#E3D9C9;
   --muted:#9C9286;
-  --muted-2:#756C62;
+  --muted-2:#8A8075;
+  --danger:#E5484D;
   --amber:#F5A524;
   --amber-deep:#C97A10;
   --line:rgba(247,241,230,.13);
@@ -52,6 +53,20 @@ html{-webkit-text-size-adjust:100%}
   --wrap:1120px;
   --pad:clamp(20px,5vw,40px);
   --r:14px;
+
+  /* movimiento: un solo criterio para toda la página */
+  --dur-1:140ms;
+  --dur-2:260ms;
+  --dur-3:420ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-spring:cubic-bezier(.2,.9,.25,1.06);
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+  html{scroll-behavior:auto}
 }
 
 html,body{margin:0;padding:0}
@@ -67,12 +82,16 @@ body{
 }
 body.is-locked{overflow:hidden}
 img{display:block;max-width:100%}
+picture{display:contents}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 ul,ol{margin:0;padding:0;list-style:none}
 h1,h2,h3,h4,p{margin:0}
+h1,h2{text-wrap:balance}
+p{text-wrap:pretty}
 ::selection{background:var(--amber);color:#170F02}
 :focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:4px}
+.row__btn:focus-visible,.chip:focus-visible,.nav a:focus-visible{outline-offset:2px}
 
 .wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 var(--pad)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -98,9 +117,15 @@ h1,h2,h3,h4,p{margin:0}
   min-height:48px;padding:0 22px;border-radius:999px;
   font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
   border:1px solid transparent;white-space:nowrap;
-  transition:transform .18s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease;
+  transition:transform var(--dur-1) var(--ease),
+             background var(--dur-2) var(--ease),
+             border-color var(--dur-2) var(--ease),
+             box-shadow var(--dur-2) var(--ease),
+             opacity var(--dur-2) var(--ease);
 }
-.btn:active{transform:translateY(1px)}
+.btn:active{transform:translateY(1px) scale(.985)}
+.btn[disabled]{opacity:.38;cursor:not-allowed;box-shadow:none}
+.btn[disabled]:active{transform:none}
 .btn--primary{background:var(--amber);color:#170F02;box-shadow:0 10px 26px rgba(245,165,36,.22)}
 .btn--primary:hover{background:#FFB63A;box-shadow:0 14px 34px rgba(245,165,36,.3)}
 .btn--ghost{border-color:var(--line);color:var(--cream);background:rgba(255,255,255,.02)}
@@ -115,6 +140,14 @@ h1,h2,h3,h4,p{margin:0}
   backdrop-filter:saturate(160%) blur(14px);
   -webkit-backdrop-filter:saturate(160%) blur(14px);
   border-bottom:1px solid var(--line-soft);
+}
+.topbar__progress{
+  position:absolute;left:0;right:0;bottom:-1px;height:2px;
+  background:transparent;overflow:hidden;pointer-events:none;
+}
+.topbar__progress i{
+  display:block;height:100%;width:100%;background:var(--amber);
+  transform:scaleX(0);transform-origin:0 50%;opacity:.85;
 }
 .topbar__in{display:flex;align-items:center;gap:14px;height:66px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
@@ -149,19 +182,30 @@ h1,h2,h3,h4,p{margin:0}
   border-bottom:1px solid var(--line-soft);
 }
 .nav__in{
+  position:relative;
   display:flex;gap:8px;overflow-x:auto;padding-top:10px;padding-bottom:10px;
   scrollbar-width:none;-webkit-overflow-scrolling:touch;
 }
 .nav__in::-webkit-scrollbar{display:none}
+.nav__pill{
+  position:absolute;left:0;top:10px;height:34px;width:0;
+  border-radius:999px;border:1px solid rgba(245,165,36,.38);
+  background:rgba(245,165,36,.10);
+  pointer-events:none;z-index:0;opacity:0;
+  transition:transform var(--dur-3) var(--ease),
+             width var(--dur-3) var(--ease),
+             opacity var(--dur-2) var(--ease);
+}
 .nav a{
+  position:relative;z-index:1;
   flex:none;display:inline-flex;align-items:center;height:34px;padding:0 14px;
   border-radius:999px;border:1px solid transparent;
   font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
   color:var(--muted);white-space:nowrap;
-  transition:color .2s ease,border-color .2s ease,background .2s ease;
+  transition:color var(--dur-2) var(--ease);
 }
 .nav a:hover{color:var(--cream)}
-.nav a.is-active{color:var(--amber);border-color:rgba(245,165,36,.4);background:rgba(245,165,36,.08)}
+.nav a.is-active{color:var(--amber)}
 .nav::after{
   content:"";position:absolute;right:0;top:0;bottom:0;width:44px;pointer-events:none;
   background:linear-gradient(90deg,transparent,rgba(11,10,9,.96));
@@ -306,13 +350,25 @@ h1,h2,h3,h4,p{margin:0}
   font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
 }
 .row__add{
+  position:relative;overflow:hidden;
   width:34px;height:34px;border-radius:50%;flex:none;
   display:grid;place-items:center;margin-top:2px;
   border:1px solid var(--line);color:var(--cream-2);
-  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+  transition:background var(--dur-2) var(--ease),
+             border-color var(--dur-2) var(--ease),
+             color var(--dur-2) var(--ease),
+             transform var(--dur-1) var(--ease);
 }
+.row__add svg{
+  grid-area:1/1;
+  transition:transform var(--dur-2) var(--ease),opacity var(--dur-2) var(--ease);
+}
+.row__add .i-check{opacity:0;transform:scale(.35) rotate(-30deg)}
 .row__btn:hover .row__add{background:var(--amber);border-color:var(--amber);color:#170F02;transform:scale(1.06)}
-.row__btn:active .row__add{transform:scale(.94)}
+.row__btn:active .row__add{transform:scale(.9)}
+.row__add.is-added{background:var(--amber);border-color:var(--amber);color:#170F02}
+.row__add.is-added .i-plus{opacity:0;transform:scale(.35) rotate(30deg)}
+.row__add.is-added .i-check{opacity:1;transform:scale(1) rotate(0)}
 
 /* ---------- sabores ---------- */
 .flavors{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:16px}
@@ -400,7 +456,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   background:rgba(20,17,14,.96);
   backdrop-filter:blur(16px);
   box-shadow:0 18px 44px rgba(0,0,0,.6);
-  transition:transform .34s cubic-bezier(.2,.8,.2,1);
+  transition:transform var(--dur-3) var(--ease-spring),opacity var(--dur-2) var(--ease);
   opacity:0;pointer-events:none;
 }
 .cartbar.is-open{transform:translate(-50%,0);opacity:1;pointer-events:auto}
@@ -412,7 +468,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 /* ---------- sheet ---------- */
 .overlay{
   position:fixed;inset:0;z-index:80;background:rgba(4,3,2,.72);
-  opacity:0;pointer-events:none;transition:opacity .28s ease;
+  opacity:0;pointer-events:none;transition:opacity var(--dur-2) var(--ease);
   backdrop-filter:blur(3px);
 }
 .overlay.is-open{opacity:1;pointer-events:auto}
@@ -423,9 +479,10 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   background:linear-gradient(180deg,#17130F,#0D0B0A);
   border:1px solid var(--line);border-bottom:0;
   border-radius:18px 18px 0 0;
-  transition:transform .36s cubic-bezier(.2,.8,.2,1);
+  transition:transform var(--dur-3) var(--ease);
   padding:10px 20px calc(22px + env(safe-area-inset-bottom));
   -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
 }
 .sheet.is-open{transform:translate(-50%,0)}
 .sheet__grab{width:38px;height:4px;border-radius:99px;background:rgba(247,241,230,.22);margin:4px auto 14px}
@@ -442,17 +499,50 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 .qty button:hover{background:rgba(245,165,36,.14);color:var(--amber)}
 .qty b{min-width:20px;text-align:center;font-size:12px;font-variant-numeric:tabular-nums}
 .sheet__empty{text-align:center;color:var(--muted);font-size:12.5px;padding:20px 0}
-.sheet__form{display:grid;gap:10px;margin-top:18px}
-.field{display:grid;gap:5px}
-.field label{font-size:9.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2)}
+.sheet__form{display:grid;gap:12px;margin-top:18px}
+.field{position:relative;display:block}
 .field input,.field textarea,.field select{
-  width:100%;min-height:44px;padding:11px 13px;border-radius:9px;
+  width:100%;min-height:54px;padding:21px 13px 8px;border-radius:9px;
   background:rgba(255,255,255,.035);border:1px solid var(--line);
-  color:var(--cream);font-family:var(--text);font-size:13.5px;
+  color:var(--cream);font-family:var(--text);font-size:14px;line-height:1.3;
+  transition:border-color var(--dur-2) var(--ease),background var(--dur-2) var(--ease);
 }
-.field textarea{min-height:64px;resize:vertical}
-.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:rgba(245,165,36,.55);background:rgba(245,165,36,.05)}
+.field textarea{min-height:88px;resize:vertical}
+.field select{padding-top:22px;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
+                   linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 26px,calc(100% - 14px) 26px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.field label{
+  position:absolute;left:14px;top:19px;
+  font-size:13px;font-weight:600;color:var(--muted);
+  pointer-events:none;transform-origin:0 0;
+  transition:transform var(--dur-2) var(--ease),color var(--dur-2) var(--ease);
+}
+.field input:focus + label,
+.field input:not(:placeholder-shown) + label,
+.field textarea:focus + label,
+.field textarea:not(:placeholder-shown) + label,
+.field--select label{
+  transform:translateY(-10px) scale(.76);
+  letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+}
+.field input:focus + label,
+.field textarea:focus + label{color:var(--amber)}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:rgba(245,165,36,.55);background:rgba(245,165,36,.05);
+}
 .field select option{background:var(--ink-2);color:var(--cream)}
+.field__err{
+  display:block;margin-top:5px;font-size:11px;line-height:1.4;color:var(--danger);
+  opacity:0;transform:translateY(-3px);
+  transition:opacity var(--dur-2) var(--ease),transform var(--dur-2) var(--ease);
+}
+.field.is-invalid .field__err{opacity:1;transform:none}
+.field.is-invalid input,.field.is-invalid textarea,.field.is-invalid select{
+  border-color:rgba(229,72,77,.55);background:rgba(229,72,77,.05);
+}
+.field[hidden]{display:none}
 .sheet__foot{margin-top:16px}
 .totals{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-top:14px;border-top:1px solid var(--line)}
 .totals span{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
@@ -467,13 +557,13 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   background:var(--cream);color:#170F02;
   font-size:12px;font-weight:800;letter-spacing:.03em;
   box-shadow:0 14px 34px rgba(0,0,0,.5);
-  transition:opacity .22s ease,transform .22s ease;
+  transition:opacity var(--dur-2) var(--ease),transform var(--dur-2) var(--ease);
   max-width:calc(100% - 32px);text-align:center;
 }
 .toast.is-open{opacity:1;transform:translate(-50%,0)}
 
 /* ---------- reveal ---------- */
-.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
 
@@ -593,10 +683,12 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4M8.6 13.4l6.8 4"/></svg>
     </button>
   </div>
+  <div class="topbar__progress" aria-hidden="true"><i id="progress"></i></div>
 </header>
 
 <nav class="nav" aria-label="Secciones de la carta">
-  <div class="wrap nav__in">
+  <div class="wrap nav__in" id="navIn">
+    <span class="nav__pill" id="navPill" aria-hidden="true"></span>
     <a href="#hamburguesas" class="is-active">Hamburguesas</a>
     <a href="#alitas">Alitas</a>
     <a href="#perros">Perros</a>
@@ -635,7 +727,11 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 
       <div class="hero__art">
         <div class="hero__img">
-          <img src="assets/img/burger-casa.jpg" alt="Hamburguesa De la Casa: pan brioche, carne artesanal de 125 g, cheddar fundido y tocineta" width="720" height="500" fetchpriority="high">
+          <picture>
+            <source type="image/avif" srcset="assets/img/burger-casa.avif">
+            <source type="image/webp" srcset="assets/img/burger-casa.webp">
+            <img src="assets/img/burger-casa.jpg" alt="Hamburguesa De la Casa: pan brioche, carne artesanal de 125 g, cheddar fundido y tocineta" width="720" height="500" fetchpriority="high">
+          </picture>
         </div>
         <div class="seal" aria-hidden="true">
           <svg class="seal__ring" viewBox="0 0 120 120">
@@ -664,7 +760,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
           <h2>Hamburguesas</h2>
           <p>Pan brioche, 125 g de carne artesanal y nuestra salsa de la casa. Todas vienen con papas a la francesa.</p>
         </div>
-        <div class="sec__thumb"><img src="assets/img/burger-casa-zoom.jpg" alt="" loading="lazy" width="720" height="500"></div>
+        <div class="sec__thumb"><picture><source type="image/avif" srcset="assets/img/burger-casa-zoom.avif"><source type="image/webp" srcset="assets/img/burger-casa-zoom.webp"><img src="assets/img/burger-casa-zoom.jpg" alt="" loading="lazy" width="720" height="500"></picture></div>
       </div>
       <ul class="menu" id="menu-hamburguesas"></ul>
     </div>
@@ -678,7 +774,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
           <h2>Alitas</h2>
           <p>Apanadas y crujientes, o bañadas en la salsa que elijas. Siempre con papas a la francesa.</p>
         </div>
-        <div class="sec__thumb"><img src="assets/img/alitas-crispy.jpg" alt="" loading="lazy" width="330" height="300"></div>
+        <div class="sec__thumb"><picture><source type="image/avif" srcset="assets/img/alitas-crispy.avif"><source type="image/webp" srcset="assets/img/alitas-crispy.webp"><img src="assets/img/alitas-crispy.jpg" alt="" loading="lazy" width="330" height="300"></picture></div>
       </div>
       <div class="flavors" id="flavors" role="group" aria-label="Sabores para las alitas">
         <span class="flavors__label">Sabores</span>
@@ -698,7 +794,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
           <h2>Perros calientes</h2>
           <p>Pan brioche, salchicha tipo americana envuelta en tocineta y papas a la francesa.</p>
         </div>
-        <div class="sec__thumb"><img src="assets/img/perros.jpg" alt="" loading="lazy" width="265" height="510"></div>
+        <div class="sec__thumb"><picture><source type="image/avif" srcset="assets/img/perros.avif"><source type="image/webp" srcset="assets/img/perros.webp"><img src="assets/img/perros.jpg" alt="" loading="lazy" width="265" height="510"></picture></div>
       </div>
       <ul class="menu" id="menu-perros"></ul>
     </div>
@@ -712,7 +808,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
           <h2>Salchipapa</h2>
           <p>Papas a la francesa recién hechas, con salchicha y todos los toppings de la casa.</p>
         </div>
-        <div class="sec__thumb"><img src="assets/img/salchipapa.jpg" alt="" loading="lazy" width="775" height="535"></div>
+        <div class="sec__thumb"><picture><source type="image/avif" srcset="assets/img/salchipapa.avif"><source type="image/webp" srcset="assets/img/salchipapa.webp"><img src="assets/img/salchipapa.jpg" alt="" loading="lazy" width="775" height="535"></picture></div>
       </div>
       <ul class="menu" id="menu-salchipapa"></ul>
     </div>
@@ -726,7 +822,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
           <h2>Menú kids</h2>
           <p>Combo completo: papas a la francesa, jugo Hit de 200 ml y chocolatina Jet.</p>
         </div>
-        <div class="sec__thumb"><img src="assets/img/kids-burger.jpg" alt="" loading="lazy" width="535" height="290"></div>
+        <div class="sec__thumb"><picture><source type="image/avif" srcset="assets/img/kids-burger.avif"><source type="image/webp" srcset="assets/img/kids-burger.webp"><img src="assets/img/kids-burger.jpg" alt="" loading="lazy" width="535" height="290"></picture></div>
       </div>
       <ul class="menu" id="menu-kids"></ul>
     </div>
@@ -879,26 +975,28 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   <div id="cartLines"></div>
   <p class="sheet__empty" id="cartEmpty">Todavía no has agregado nada.<br>Cierra y toca el + de un producto.</p>
 
-  <form class="sheet__form" id="orderForm" autocomplete="on">
-    <div class="field">
+  <form class="sheet__form" id="orderForm" autocomplete="on" novalidate>
+    <div class="field" id="wrap-nombre">
+      <input id="f-nombre" name="nombre" type="text" placeholder=" " autocomplete="name" required>
       <label for="f-nombre">Nombre</label>
-      <input id="f-nombre" name="nombre" type="text" placeholder="¿Cómo te llamas?" autocomplete="name">
+      <span class="field__err" id="e-nombre" role="alert"></span>
     </div>
-    <div class="field">
-      <label for="f-entrega">Entrega</label>
+    <div class="field field--select">
       <select id="f-entrega" name="entrega">
-        <option>Domicilio</option>
-        <option>Para llevar</option>
-        <option>Consumir en el local</option>
+        <option value="Domicilio">Domicilio</option>
+        <option value="Para llevar">Para llevar</option>
+        <option value="Consumir en el local">Consumir en el local</option>
       </select>
+      <label for="f-entrega">Entrega</label>
+    </div>
+    <div class="field" id="wrap-dir">
+      <input id="f-dir" name="direccion" type="text" placeholder=" " autocomplete="street-address">
+      <label for="f-dir">Dirección</label>
+      <span class="field__err" id="e-dir" role="alert"></span>
     </div>
     <div class="field">
-      <label for="f-dir">Dirección <span style="text-transform:none;letter-spacing:0">(si es domicilio)</span></label>
-      <input id="f-dir" name="direccion" type="text" placeholder="Barrio, calle, número, referencias" autocomplete="street-address">
-    </div>
-    <div class="field">
+      <textarea id="f-notas" name="notas" placeholder=" "></textarea>
       <label for="f-notas">Notas</label>
-      <textarea id="f-notas" name="notas" placeholder="Sabores de las alitas, sin cebolla, término de la carne…"></textarea>
     </div>
   </form>
 
@@ -1006,7 +1104,9 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   /* =========================================================
      render de la carta
      ========================================================= */
-  var PLUS = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+  var ICON_ADD =
+    '<svg class="i-plus" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>' +
+    '<svg class="i-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
 
   function rowHTML(item, i) {
     var desc = document.createElement("div");
@@ -1025,7 +1125,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
             '<span class="row__desc">' + desc.innerHTML + '</span>' +
             (item.t ? '<span class="row__tag">' + item.t + '</span>' : '') +
           '</span>' +
-          '<span class="row__add" aria-hidden="true">' + PLUS + '</span>' +
+          '<span class="row__add" aria-hidden="true">' + ICON_ADD + '</span>' +
         '</button>' +
       '</li>';
   }
@@ -1096,6 +1196,13 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     }
     addItem(id, label, price);
 
+    var addEl = btn.querySelector(".row__add");
+    if (addEl) {
+      addEl.classList.add("is-added");
+      clearTimeout(addEl._t);
+      addEl._t = setTimeout(function () { addEl.classList.remove("is-added"); }, 1100);
+    }
+
     var msg = label + " agregado";
     if (btn.hasAttribute("data-needs-flavor") && !flavors.length) {
       msg = "Agregado · elige sabores en las notas";
@@ -1109,14 +1216,31 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
   var bar = $("#cartbar"), countEl = $("#cartCount"), totalEl = $("#cartTotal");
   var linesEl = $("#cartLines"), emptyEl = $("#cartEmpty"), sheetTotal = $("#sheetTotal");
 
+  /* ---------- número que cuenta, no que salta ---------- */
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function tweenMoney(el, to) {
+    var from = el._v == null ? to : el._v;
+    el._v = to;
+    cancelAnimationFrame(el._tw);
+    if (from === to || reduceMotion.matches) { el.textContent = money(to); return; }
+    var t0 = performance.now(), dur = 380;
+    (function step(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = money(from + (to - from) * e);
+      if (p < 1) el._tw = requestAnimationFrame(step);
+    })(t0);
+  }
+
   function render() {
     var c = count(), t = total();
 
     bar.classList.toggle("is-open", c > 0);
     bar.setAttribute("aria-hidden", c > 0 ? "false" : "true");
     countEl.textContent = c === 1 ? "1 producto" : c + " productos";
-    totalEl.textContent = money(t);
-    sheetTotal.textContent = money(t);
+    tweenMoney(totalEl, t);
+    tweenMoney(sheetTotal, t);
 
     linesEl.innerHTML = "";
     Object.keys(cart).forEach(function (id) {
@@ -1141,6 +1265,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     });
 
     emptyEl.style.display = isEmpty() ? "block" : "none";
+    updateSend();
   }
 
   function pulseBar() {
@@ -1184,6 +1309,88 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     if (e.key === "Escape" && sheet.classList.contains("is-open")) closeSheet();
   });
 
+  /* ---------- foco atrapado dentro de la hoja ---------- */
+  sheet.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab") return;
+    var f = sheet.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    f = Array.prototype.filter.call(f, function (el) {
+      return !el.disabled && el.offsetParent !== null;
+    });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  /* =========================================================
+     formulario: validación en línea
+     ========================================================= */
+  var fNombre = $("#f-nombre"), fEntrega = $("#f-entrega"),
+      fDir = $("#f-dir"), fNotas = $("#f-notas");
+  var wNombre = $("#wrap-nombre"), wDir = $("#wrap-dir");
+  var eNombre = $("#e-nombre"), eDir = $("#e-dir");
+  var touched = { nombre: false, dir: false };
+
+  function isDelivery() { return fEntrega.value === "Domicilio"; }
+
+  function validate(showErrors) {
+    var nombreOk = fNombre.value.trim().length >= 2;
+    var dirOk = !isDelivery() || fDir.value.trim().length >= 5;
+
+    if (nombreOk) {
+      wNombre.classList.remove("is-invalid");
+      eNombre.textContent = "";
+    } else if (showErrors && touched.nombre !== false) {
+      wNombre.classList.add("is-invalid");
+      eNombre.textContent = fNombre.value.trim()
+        ? "Escribe al menos dos letras."
+        : "Necesitamos tu nombre para identificar el pedido.";
+    }
+
+    if (dirOk) {
+      wDir.classList.remove("is-invalid");
+      eDir.textContent = "";
+    } else if (showErrors && touched.dir !== false) {
+      wDir.classList.add("is-invalid");
+      eDir.textContent = "Para domicilio necesitamos la dirección completa.";
+    }
+
+    return nombreOk && dirOk;
+  }
+
+  function forceErrors() {
+    touched.nombre = true;
+    touched.dir = true;
+    var ok = validate(true);
+    if (!ok) {
+      var bad = sheet.querySelector(".is-invalid input, .is-invalid textarea");
+      if (bad) {
+        bad.focus({ preventScroll: true });
+        bad.scrollIntoView({ block: "center", behavior: reduceMotion.matches ? "auto" : "smooth" });
+      }
+    }
+    return ok;
+  }
+
+  function updateSend() {
+    var b = $("#sendOrder");
+    if (b) b.disabled = isEmpty();
+  }
+
+  function syncDelivery() {
+    var delivery = isDelivery();
+    wDir.hidden = !delivery;
+    if (!delivery) { wDir.classList.remove("is-invalid"); eDir.textContent = ""; }
+  }
+
+  fEntrega.addEventListener("change", syncDelivery);
+  syncDelivery();
+
+  fNombre.addEventListener("blur", function () { touched.nombre = true; validate(true); });
+  fDir.addEventListener("blur", function () { touched.dir = true; validate(true); });
+  fNombre.addEventListener("input", function () { if (touched.nombre) validate(true); });
+  fDir.addEventListener("input", function () { if (touched.dir) validate(true); });
+
   /* ---------- mensaje ---------- */
   function buildMessage() {
     var lines = ["¡Hola " + CONFIG.brand + "! 👋 Quiero hacer este pedido:", ""];
@@ -1201,7 +1408,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 
     if (nombre) lines.push("Nombre: " + nombre);
     lines.push("Entrega: " + entrega);
-    if (dir) lines.push("Dirección: " + dir);
+    if (dir && isDelivery()) lines.push("Dirección: " + dir);
     if (notas) lines.push("Notas: " + notas);
     lines.push("");
     lines.push("Enviado desde la carta web.");
@@ -1210,6 +1417,7 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
 
   $("#sendOrder").addEventListener("click", function () {
     if (isEmpty()) { toast("Agrega al menos un producto"); return; }
+    if (!forceErrors()) return;
     window.open(waHref(buildMessage()), "_blank", "noopener");
   });
 
@@ -1242,6 +1450,24 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
      ========================================================= */
   var navLinks = $$(".nav a");
   var sections = navLinks.map(function (a) { return $(a.getAttribute("href")); }).filter(Boolean);
+  var navIn = $("#navIn"), navPill = $("#navPill"), progressEl = $("#progress");
+
+  function positionPill(link) {
+    if (!navIn || !navPill) return;
+    if (!link) { navPill.style.opacity = "0"; return; }
+    var r = link.getBoundingClientRect();
+    var pr = navIn.getBoundingClientRect();
+    navPill.style.width = r.width + "px";
+    navPill.style.transform = "translateX(" + (r.left - pr.left + navIn.scrollLeft) + "px)";
+    navPill.style.opacity = "1";
+  }
+
+  function updateProgress() {
+    if (!progressEl) return;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var p = h > 0 ? Math.min(1, Math.max(0, window.scrollY / h)) : 0;
+    progressEl.style.transform = "scaleX(" + p.toFixed(4) + ")";
+  }
 
   function setActive() {
     var y = window.scrollY + 150;
@@ -1249,8 +1475,11 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     sections.forEach(function (s) { if (s.getBoundingClientRect().top + window.scrollY <= y) current = s; });
     if (window.scrollY < 120) current = sections[0];
     navLinks.forEach(function (a) {
-      a.classList.toggle("is-active", !!current && a.getAttribute("href") === "#" + current.id);
+      var on = !!current && a.getAttribute("href") === "#" + current.id;
+      a.classList.toggle("is-active", on);
+      if (on) positionPill(a);
     });
+    updateProgress();
   }
 
   var ticking = false;
@@ -1259,7 +1488,20 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     ticking = true;
     requestAnimationFrame(function () { setActive(); ticking = false; });
   }, { passive: true });
-  window.addEventListener("resize", setActive);
+
+  window.addEventListener("resize", function () {
+    setActive();
+    updateProgress();
+  });
+
+  navIn.addEventListener("scroll", function () {
+    var active = navIn.querySelector("a.is-active");
+    if (active) positionPill(active);
+  }, { passive: true });
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { setActive(); });
+  }
   setActive();
 
   if ("IntersectionObserver" in window) {
