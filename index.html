@@ -1879,9 +1879,10 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
     });
   }
 
-  /* ---------- video del hero ---------- */
+  /* ---------- video del hero (diferido: no compite con la primera pintura) ---------- */
   var heroVideo = $("#heroVideo");
-  if (heroVideo && motionOK && !saveData) {
+  function startHeroVideo() {
+    if (!heroVideo || !motionOK || saveData) return;
     heroVideo.addEventListener("playing", function () {
       heroVideo.classList.add("is-on");
     }, { once: true });
@@ -1896,6 +1897,11 @@ footer{margin-top:clamp(48px,7vw,80px);border-top:1px solid var(--line);backgrou
         });
       }, { threshold: 0.08 }).observe(heroVideo);
     }
+  }
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(startHeroVideo, { timeout: 1800 });
+  } else {
+    setTimeout(startHeroVideo, 1200);
   }
 
   $("#year").textContent = new Date().getFullYear();
